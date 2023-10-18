@@ -8,8 +8,11 @@ import sqlalchemy
 from sqlalchemy import create_engine
 import re
 import pandas as pd
+
 import os
 from dotenv import load_dotenv
+
+load_dotenv()
 
 import streamlit as st
 
