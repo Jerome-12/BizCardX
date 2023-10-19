@@ -50,7 +50,7 @@ with tab1:
    with col1:
             
             try:
-                # Define a funtion to draw the box on image
+                #  funtion to draw the box on image
                 def draw_boxes(image, text_read, color='blue', width=2):
 
                     # Create a new image with bounding boxes
@@ -63,14 +63,12 @@ with tab1:
                         draw.line([*p0, *p1, *p2, *p3, *p0], fill=color, width=width)
                     return image_with_boxes
 
-                # Function calling
                 result_image = draw_boxes(image, text_read)
 
                 # Result image
                 st.image(result_image, caption='Captured text from the card')
 
             except NameError:
-                 #st.write('Upload the Image')  
                  pass 
 
    with col2:
@@ -96,37 +94,48 @@ with tab1:
                             if "www " in i.lower() or "www." in i.lower():
                                 data['Website'].append(i)
                             elif 'WWW' in i:
-                                data["Website"].append(info[details-1] + "." + info[details])
+                                data["Website"].append(info[details] + "." + info[details-1])
 
-                        # email
+                            # email
                             elif '@' in i:
                                 data['Email'].append(i)
 
-                            # Mobile Number
+                            # CONTACT NUMBER
                             elif '-' in i:
                                 data['Contact_number'].append(i)
                                 if len(data['Contact_number'])==2:
                                     data['Contact_number']='&'.join(data['Contact_number'])
 
-                            #  Card holder
+                            # NAME
                             elif details ==0:
                                 data['Name'].append(i)
 
-                            # Designation
+                            # DESIGNATION
                             elif details ==1:
                                 data['Designation'].append(i)
 
-                            # To get COMPANY NAME
-                            elif details == len(info) - 1:
-                                data["Company"].append(i)      
+                            # COMPANY 
+                            if details == len(info)-1:
+                              data["Company"].append(i)
+                            elif re.findall("^[GBFIs].*", i):
+                              data["Company"].append(i)
+                               
+                       
+                            if len(data["Company"])>2:
+                                for k in range (len(data["Company"])-1):
+                                    if len(data["Company"][k])>12 :
+                                      data["Company"].pop(k)
+                                      
+                                    else:  
+                                     pass      
 
-                            # area
+                            # AREA
                             if re.findall('^[0-9] [a-zA-Z]+',i):
-                                data['Area'].append(i)
+                                data['Area'].append(i.split(",")[0])
                             elif re.findall("[0-9] [a-zA-Z]+", i):
-                                data["Area"].append(i) 
+                                data["Area"].append(i.split(",")[0]) 
 
-                            #District
+                            #DISTRICT
             
                             match1 = re.findall(".+St , ([a-zA-Z]+).+", i)
                             match2 = re.findall(".+St,, ([a-zA-Z]+).+", i)
@@ -138,16 +147,16 @@ with tab1:
                             elif match3:
                                 district = match3[0]  # Assign the matched city value
 
-                            # To get STATE
+                            # STATE
                             state_match = re.findall("[a-zA-Z]{9} +[0-9]", i)
                             if state_match:
                                 data["State"].append(i[:9])
                             elif re.findall("^[0-9].+, ([a-zA-Z]+);", i):
                                 data["State"].append(i.split()[-1])
-                        # if len(data["State"]) == 2:
-                            #    data["State"].pop(0)
+                            if len(data["State"]) == 2:
+                                data["State"].pop(0)
 
-                            # To get PINCODE
+                            # PINCODE
                             if len(i) >= 6 and i.isdigit():
                                 data["Pincode"].append(i)
                             elif re.findall("[a-zA-Z]{9} +[0-9]", i):
@@ -155,13 +164,23 @@ with tab1:
 
                     data["District"].append(district)  # Append the city value to the 'city' array
 
+                     # Company
+                    if len(data["Company"])>=2:
+                            try:
+                                #data["Company"] = "  ".join(data["Company"])
+                               # ab=(data["Company"][0]+" "+data["Company"][1])
+                                data["Company"].pop(2)
+                                #data["Company"].append(ab)
+                                data["Company"] = "  ".join(data["Company"]) 
+                            except:
+                                data["Company"] = "  ".join(data["Company"])  
+
                 # Call funtion
                 get_data(result)
 
                 # Create dataframe
                 data_df = pd.DataFrame(data)
 
-                #st.write('data')
                 st.dataframe(data_df)
 
             except NameError:
@@ -190,13 +209,13 @@ with tab1:
                         password=os.getenv("MYSQLKEY"),
                         auth_plugin='mysql_native_password')
 
-                    # Create a new database and use it
+                    # Create a new database
                     mycursor = connect.cursor()
                     mycursor.execute("CREATE DATABASE IF NOT EXISTS Bizcard")
                     mycursor.close()
                     connect.database = "Bizcard"
 
-                    # Connect to the newly created database
+                    # Connect to the created database
                     engine = create_engine(os.getenv("MYSQLSRC"), echo=False)
 
                     try:
@@ -213,7 +232,7 @@ with tab1:
                             "State": sqlalchemy.types.VARCHAR(length=225),
                             "Pincode": sqlalchemy.types.String(length=10)})
                         
-                        #Uploaded completed message
+                        #Uploaded success message
                         st.info('Data Successfully Uploaded')
 
                     except:
@@ -225,7 +244,6 @@ with tab1:
                     session_state.data_uploaded = False
 
             else:
-                #st.info('Click the Browse file button and upload an image')
                  pass
 
                                             
@@ -260,15 +278,15 @@ with tab2:
             # Fetch all the rows from the result
             rows = cursor.fetchall()
 
-            # Take the cardholder name
+            # Take the name
             names = []
             for row in rows:
                 names.append(row[0])
 
-            # Create a selection box to select cardholder name
+            # Create a selection box to select name
             Name_select = st.selectbox("**Select a Name to Edit the details**", names, key='Name_select')
 
-            # Collect all data depending on the cardholder's name
+            # Collect all data depending on the name
             cursor.execute( "SELECT Company, Name, Designation, Contact_number, Email, Website, Area, District, State, Pincode FROM bizcardx WHERE Name=%s", (Name_select,))
             col_data = cursor.fetchone()
 
@@ -291,7 +309,6 @@ with tab2:
             session_state = SessionState(data_update=False)
             
             # Update button
-            #st.write('Click the Update button to update the modified data')
             update = st.button('**Update**', key = 'update')
 
             # Check if the button is clicked
@@ -317,10 +334,8 @@ with tab2:
                 
                 session_state.data_update = False
 
-        #except:
-            #st.info('No data stored in the database')
 
-    # --------------------------------------   /   /   Delete option   /   /   -------------------------------------- #
+    # Delete option 
 
     with col2:
         st.subheader(':violet[Delete option]')
@@ -341,12 +356,12 @@ with tab2:
             # Fetch all the rows from the result
             del_name = cursor.fetchall()
 
-            # Take the cardholder name
+            # Take the Name
             del_names = []
             for row in del_name:
                 del_names.append(row[0])
 
-            # Create a selection box to select cardholder name
+            # Create a selection box to select Name
             delete_name = st.selectbox("**Select a Name to Delete the details**", del_names, key='delete_name')
 
             # Create a session state object
@@ -356,7 +371,6 @@ with tab2:
             session_state = SessionState(data_delet=False)
 
             # Delet button
-            #st.write('Click the Delete button to Delete selected Name details')
             delet = st.button('**Delete**', key = 'delet')
 
             # Check if the button is clicked
