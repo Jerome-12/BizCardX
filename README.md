@@ -19,10 +19,13 @@
  If any of the uploaded data is false/mismatch, navigate to the Data modification tab and the select the name extract from the business card. Then it shows the extracted details and it allows to modify the mismatched data.
  And it has a delete option to delete the specific name from the database.
 
+### Data Extraction 
  ![s7](https://github.com/Jerome-12/BizCardX/assets/140602821/5660c0a8-57d1-4eed-a44c-02e9f167bda6)
-
+ 
+### Visualized the extracted data
 ![s8](https://github.com/Jerome-12/BizCardX/assets/140602821/bddafe15-f945-41cd-8489-91806bf53a92)
 
+### Data Modification 
  ![s9](https://github.com/Jerome-12/BizCardX/assets/140602821/4d3ca9d4-1c68-489d-998f-3cfdcadc17e9)
 
 
